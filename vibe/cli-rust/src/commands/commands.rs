@@ -68,6 +68,8 @@ const COMMANDS: &[Command] = &[
     cmd(&["/rename"], "Rename the current session", true).args("<title>"),
     cmd(&["/mcp", "/connectors"], "Display available MCP servers and connectors. Pass a name to list tools; subcommands: add <url> [--transport http|streamable-http], status, login <alias>, logout <alias>", false)
         .args("[name] | add <url> | status | login <alias> | logout <alias>"),
+    cmd(&["/provider", "/providers"], "Add and manage custom Mistral-compatible providers beside your Mistral account. Subcommands: list, add <name> <api_base> [api_key], set-key <name> <key>, fetch-models <name>, add-model <provider> <model> [--input-price N] [--output-price N], remove <name>", false)
+        .args("[list] | add <name> <api_base> [api_key] [--type openai|mistral|anthropic] | set-key <name> <key> | fetch-models <name> | add-model <provider> <model> | remove <name>"),
     cmd(&["/plugins"], "Display the plugins this session is running", false),
     cmd(&["/reload-plugins"], "Re-pin this session's plugins and report what changed", false),
     cmd(&["/voice"], "Configure voice settings", true).after_jobs(),

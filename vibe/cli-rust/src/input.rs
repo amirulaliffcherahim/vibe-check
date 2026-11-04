@@ -636,6 +636,8 @@ pub fn handle_model_key(app: &mut App, client: &Arc<Client>, key: KeyEvent) {
         KeyCode::Down | KeyCode::Char('j') => model_picker::navigate(app, true),
         KeyCode::Enter => model_picker::select(app, client, Scope::Saved),
         KeyCode::Char('s') => model_picker::select(app, client, Scope::Session),
+        KeyCode::Tab => model_picker::toggle_show_all(app),
+        KeyCode::Char('*') => model_picker::toggle_scoped(app, client),
         _ => {}
     }
 }

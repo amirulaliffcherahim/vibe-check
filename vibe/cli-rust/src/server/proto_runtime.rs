@@ -57,6 +57,10 @@ pub struct ConfigView {
     pub images_supported: Option<bool>,
     #[serde(default)]
     pub default_model_alias: String,
+    /// True when `scoped_models` names an available model; `/model` then
+    /// filters to scoped models until Tab. Absent from an older server.
+    #[serde(default)]
+    pub model_scope_active: bool,
     pub default_agent: Option<String>,
     pub theme: Option<String>,
     pub log_level: Option<String>,
@@ -113,6 +117,11 @@ pub struct ModelView {
     pub supports_images: Option<bool>,
     #[serde(deserialize_with = "crate::utils::json::lenient")]
     pub thinking_levels: Vec<String>,
+    /// The name of the provider the model runs on (`mistral`, `shy`,
+    /// `openrouter`); absent from an older server (ADR 0014).
+    pub provider_label: Option<String>,
+    /// Whether the alias is in `scoped_models`.
+    pub scoped: bool,
 }
 
 /// `TranscriptionConfigView` or `SpeechConfigView`: a model and its provider.

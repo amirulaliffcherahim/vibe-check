@@ -15,6 +15,16 @@ pub(crate) const PICK_HINTS: &[Hint] = &[
     hints::CANCEL,
 ];
 
+/// `/model`: the pick hints, plus switching the scope and starring a model.
+pub(crate) const MODEL_PICK_HINTS: &[Hint] = &[
+    hints::NAVIGATE,
+    (key::ENTER, action::SAVE),
+    ("s", action::SESSION_ONLY),
+    (key::TAB, action::ALL_OR_SCOPED),
+    ("*", action::SCOPE),
+    hints::CANCEL,
+];
+
 pub(crate) fn key_style() -> Style {
     theme::text(theme::primary()).add_modifier(Modifier::BOLD)
 }

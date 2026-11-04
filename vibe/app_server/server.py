@@ -856,7 +856,7 @@ class AppServer:
             "workspace/git/worktrees/remove",
             "workspace/trust/status",
             "workspace/trust/untrustedConfig",
-        } or method.startswith("projectLinks/"):
+        } or method.startswith(("projectLinks/", "providers/")):
             # The attached session is the caller; its own worktree holder does
             # not count as in use for the worktree-remove questions it asks.
             # The setup methods are session-less by construction: the wizard

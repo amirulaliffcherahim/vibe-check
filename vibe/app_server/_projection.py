@@ -85,13 +85,17 @@ def project_config_view(
     # Grouped by source; a model no known layer defines keeps its place, last.
     models = [available[alias] for alias in sources if alias in available]
     models += [model for alias, model in available.items() if alias not in sources]
+    scoped = {alias for alias in config.scoped_models if alias in available}
     return ConfigView(
         active_model=_project_model_config(
             active_model,
             image_fallback=image_fallback,
             source=sources.get(active_model.alias),
             route_facts=_route_facts(config, active_model),
+            provider_label=provider_label(config, active_model),
+            scoped=active_model.alias in scoped,
         ),
+        model_scope_active=bool(scoped),
         active_model_pinned=active_model_pinned,
         images_supported=active_model.supports_images or describable,
         awaiting_experiment_model=awaiting_experiment_model,
@@ -127,6 +131,8 @@ def project_config_view(
                 image_fallback=image_fallback,
                 source=sources.get(model.alias),
                 route_facts=_route_facts(config, model),
+                provider_label=provider_label(config, model),
+                scoped=model.alias in scoped,
             )
             for model in models
         ],
@@ -203,12 +209,27 @@ def _route_facts(
     return facts.compaction_threshold, facts.thinking, list(facts.thinking_levels)
 
 
+def provider_label(config: VibeConfigSchema, model: ModelConfig) -> str | None:
+    """Where ``model`` runs, as `/model` shows it: the provider's name.
+
+    None when the provider is missing, so a stale model entry shows no label
+    rather than a wrong one.
+    """
+    try:
+        provider = config.get_provider_for_model(model)
+    except ValueError:
+        return None
+    return provider.name
+
+
 def _project_model_config(
     model: ModelConfig,
     *,
     image_fallback: bool,
     source: ModelSource | None,
     route_facts: tuple[int | None, ThinkingLevel, list[ThinkingLevel]],
+    provider_label: str | None = None,
+    scoped: bool = False,
 ) -> ModelConfigView:
     compaction_threshold, thinking, thinking_levels = route_facts
     image_delivery: Literal["native", "resource_link"] | None = None
@@ -227,6 +248,8 @@ def _project_model_config(
         image_delivery=image_delivery,
         thinking_levels=thinking_levels,
         source=source,
+        provider_label=provider_label,
+        scoped=scoped,
     )
 
 

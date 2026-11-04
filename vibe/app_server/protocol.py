@@ -185,6 +185,12 @@ SERVER_METHODS: tuple[str, ...] = (
     "projects/list",
     "projects/remove",
     "projects/rename",
+    "providers/add",
+    "providers/addModel",
+    "providers/fetchModels",
+    "providers/list",
+    "providers/remove",
+    "providers/setKey",
     "review/approve",
     "review/baseline",
     "review/hunks",
@@ -2541,6 +2547,115 @@ class ProjectsRemoveParams(ProtocolModel):
 
 class ProjectMutationResponse(ProtocolModel):
     project: LocalProjectView
+
+
+class ProviderSummaryView(ProtocolModel):
+    """One configured provider, as `/provider` renders it.
+
+    ``api_base`` is sanitized: a credential pasted into the URL never reaches the
+    client. ``has_api_key`` is false only when the provider names an env var that
+    resolves to nothing.
+    """
+
+    name: str
+    api_base: str
+    backend: str
+    api_style: str = "openai"
+    api_key_env_var: str = ""
+    has_api_key: bool = False
+    credential_source: ProviderCredentialSourceKind | None = None
+    models: list[str] = Field(default_factory=list)
+    # The built-in Mistral provider: cannot be removed or overwritten here.
+    is_default: bool = False
+
+
+class ProvidersListParams(ProtocolModel):
+    pass
+
+
+class ProvidersListResponse(ProtocolModel):
+    providers: list[ProviderSummaryView] = Field(default_factory=list)
+
+
+class ProvidersAddParams(ProtocolModel):
+    name: str = Field(min_length=1)
+    api_base: str = Field(min_length=1)
+    # Stored in the OS keyring (or the 0600 .env fallback); never persisted to
+    # config.toml.
+    api_key: str | None = None
+    # Defaults to <NAME>_API_KEY. MISTRAL_API_KEY is refused: that name belongs
+    # to the primary Mistral account.
+    api_key_env_var: str | None = None
+    # The wire format of a generic provider. Ignored by the Mistral backend.
+    api_style: Literal["openai", "openai-responses", "reasoning", "anthropic"] = (
+        "openai"
+    )
+    # ``mistral`` speaks the Mistral API (a second workspace key, a proxy, a
+    # self-hosted server); it never becomes the Mistral account.
+    backend: Literal["generic", "mistral"] = "generic"
+    # Query GET {api_base}/models and register what it lists.
+    fetch_models: bool = True
+
+
+class ProvidersAddResponse(ProtocolModel):
+    provider: ProviderSummaryView
+    # The key-persist outcome, as setup/store-credential reports it.
+    key_outcome: str | None = None
+    discovered_models: list[str] = Field(default_factory=list)
+    # Why discovery failed, when the provider was added anyway.
+    fetch_error: str | None = None
+
+
+class ProvidersSetKeyParams(ProtocolModel):
+    name: str = Field(min_length=1)
+    api_key: str = Field(min_length=1)
+
+
+class ProvidersSetKeyResponse(ProtocolModel):
+    provider: ProviderSummaryView
+    outcome: str
+
+
+class ProvidersFetchModelsParams(ProtocolModel):
+    name: str = Field(min_length=1)
+
+
+class ProvidersFetchModelsResponse(ProtocolModel):
+    provider: ProviderSummaryView
+    discovered_models: list[str] = Field(default_factory=list)
+
+
+class ProvidersAddModelParams(ProtocolModel):
+    provider: str = Field(min_length=1)
+    model: str = Field(min_length=1)
+    # Defaults to <provider>/<model>.
+    alias: str | None = None
+    display_name: str | None = None
+    max_context_length: int | None = Field(default=None, ge=1)
+    max_output_tokens: int | None = Field(default=None, ge=1)
+    # USD per million tokens, as ModelConfig stores them.
+    input_price: float | None = Field(default=None, ge=0)
+    output_price: float | None = Field(default=None, ge=0)
+    supports_images: bool | None = None
+
+
+class ProvidersAddModelResponse(ProtocolModel):
+    alias: str
+    model: str
+    provider: str
+    display_name: str
+
+
+class ProvidersRemoveParams(ProtocolModel):
+    name: str = Field(min_length=1)
+    # Also forget the stored credential.
+    remove_key: bool = True
+
+
+class ProvidersRemoveResponse(ProtocolModel):
+    name: str
+    removed: bool
+    removed_models: list[str] = Field(default_factory=list)
 
 
 class LoopsListParams(ProtocolModel):

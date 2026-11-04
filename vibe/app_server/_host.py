@@ -13,6 +13,7 @@ from typing import Any
 from vibe.app_server._cached_layers import apply_cached_layers
 from vibe.app_server._config_errors import USER_CONFIG_ERRORS, user_config_error
 from vibe.app_server._connection_protocol import ClientInfo
+from vibe.app_server._custom_providers import PROVIDER_METHODS, ProvidersController
 from vibe.app_server._dispatch import DispatchResult, RequestFailure, method_not_found
 from vibe.app_server._history_projection import project_message_history
 from vibe.app_server._local_projects_controller import (
@@ -150,6 +151,7 @@ _HOST_METHODS = frozenset({
     "projectLinks/save",
     "projectLinks/unlink",
     *LOCAL_PROJECT_METHODS,
+    *PROVIDER_METHODS,
     "session/delete",
     "session/history/list",
     "session/read",
@@ -191,6 +193,9 @@ class HostRequestHandler:
         self._local_projects = LocalProjectsController()
         self._setup = SetupRequestHandler(harness_files)
         self._local_skills = LocalSkillsController(
+            self._local_skill_files, self._load_orchestrator
+        )
+        self._providers = ProvidersController(
             self._local_skill_files, self._load_orchestrator
         )
         self._missing_layers = MissingLayerFetches(org_config)
@@ -273,6 +278,8 @@ class HostRequestHandler:
                 response = await self._local_skills.dispatch(method, raw_params)
             case _ if method in LOCAL_PROJECT_METHODS:
                 response = await self._local_projects.dispatch(method, raw_params)
+            case _ if method in PROVIDER_METHODS:
+                response = await self._providers.dispatch(method, raw_params)
             case _ if method.startswith("setup/"):
                 # The server rejects pre-initialize requests, so a live
                 # setup call always carries the handshake's client info.

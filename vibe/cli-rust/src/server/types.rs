@@ -137,6 +137,15 @@ pub mod method {
     pub const WORKSPACE_WORKTREE_REMOVE: &str = "workspace/git/worktrees/remove";
     /// The session's PR/MR artifacts (app-server `artifacts/list`).
     pub const ARTIFACTS_LIST: &str = "artifacts/list";
+    /// Custom providers beside the primary Mistral account (`/provider`).
+    pub const PROVIDERS_LIST: &str = "providers/list";
+    pub const PROVIDERS_ADD: &str = "providers/add";
+    pub const PROVIDERS_SET_KEY: &str = "providers/setKey";
+    /// Register every model the provider's `/models` endpoint lists.
+    pub const PROVIDERS_FETCH_MODELS: &str = "providers/fetchModels";
+    /// Register one model by hand, with its prices.
+    pub const PROVIDERS_ADD_MODEL: &str = "providers/addModel";
+    pub const PROVIDERS_REMOVE: &str = "providers/remove";
 }
 
 /// Callback kinds the client advertises at `initialize` and knows how to answer.

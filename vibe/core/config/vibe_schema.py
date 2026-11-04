@@ -171,6 +171,10 @@ def load_dotenv_values(
             record_env_value_origin(key, value, EnvValueOrigin.VIBE_HOME_ENV_FILE)
 
 
+# The provider that holds the user's Mistral account. A custom provider may use
+# the Mistral backend, but only this one receives account-scoped calls.
+PRIMARY_MISTRAL_PROVIDER = "mistral"
+
 DEFAULT_PROVIDERS = [
     ProviderConfig(
         name="mistral",
@@ -586,6 +590,14 @@ class VibeConfigSchema(ConfigSchema):
         BeforeValidator(normalize_model_configs),
         AfterValidator(_non_empty),
     ] = Field(default_factory=lambda: normalize_model_configs(DEFAULT_MODELS))
+    scoped_models: Annotated[list[str], WithReplaceMerge()] = Field(
+        default_factory=list,
+        description=(
+            "Model aliases the /model picker shows by default, to keep the list"
+            " short. Empty shows every model. Display only: any configured model"
+            " can still be picked after pressing Tab in /model."
+        ),
+    )
     allowed_models: Annotated[list[str], WithReplaceMerge()] = Field(
         default_factory=list,
         description=(
@@ -1228,6 +1240,27 @@ class VibeConfigSchema(ConfigSchema):
             )
 
     def get_mistral_provider(self) -> ProviderConfig | None:
+        """The provider that holds the user's Mistral account.
+
+        The provider named ``mistral`` when it uses the Mistral backend: a
+        custom provider added with ``/provider add --type mistral`` speaks the
+        Mistral API but is not the account, so it never receives account-scoped
+        calls (``/whoami``, telemetry, the model catalog, experiments).
+
+        Without such a provider, the active provider when it uses the Mistral
+        backend, else the first that does, as before.
+        """
+        primary = next(
+            (
+                provider
+                for provider in self.providers
+                if provider.name == PRIMARY_MISTRAL_PROVIDER
+                and provider.backend == Backend.MISTRAL
+            ),
+            None,
+        )
+        if primary is not None:
+            return primary
         try:
             active_provider = self.get_active_provider()
             if active_provider.backend == Backend.MISTRAL:

@@ -533,6 +533,10 @@ pub struct ModelOption {
     /// The model's configured thinking level and the levels it offers.
     pub thinking: String,
     pub thinking_levels: Vec<String>,
+    /// Where the model runs, shown in parentheses after the name.
+    pub provider_label: Option<String>,
+    /// In `scoped_models`: shown by default when a scope is active.
+    pub scoped: bool,
 }
 
 /// `/model` picker state (a bottom-app).
@@ -552,6 +556,10 @@ pub struct ModelPicker {
     pub default_display_name: String,
     /// Alias the Default row resolves to (`defaultModelAlias`).
     pub default_alias: String,
+    /// The server says `scoped_models` names an available model.
+    pub scope_active: bool,
+    /// Show every model instead of only scoped ones; reset when `/model` opens.
+    pub show_all: bool,
 }
 
 /// The artifacts modal state (a bottom-app): the session's PR/MR links.

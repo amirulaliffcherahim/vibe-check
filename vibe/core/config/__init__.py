@@ -96,6 +96,7 @@ if TYPE_CHECKING:
         DEFAULT_TRANSCRIBE_PROVIDERS,
         DEFAULT_TTS_MODELS,
         DEFAULT_TTS_PROVIDERS,
+        PRIMARY_MISTRAL_PROVIDER,
         EnvValueOrigin,
         VibeConfigSchema,
         create_default_config,
@@ -129,6 +130,7 @@ __all__ = [
     "DEFAULT_TTS_PROVIDERS",
     "DEFAULT_VIBE_BASE_URL",
     "MISSING_BACKING_STORE_DATA_FINGERPRINT",
+    "PRIMARY_MISTRAL_PROVIDER",
     "THINKING_LEVELS",
     "AddOperationPatch",
     "AgentProfileLayer",
@@ -316,6 +318,10 @@ _MAPPING: dict[str, tuple[str, str]] = {
     ),
     "DEFAULT_MODELS": ("vibe.core.config.vibe_schema", "DEFAULT_MODELS"),
     "DEFAULT_PROVIDERS": ("vibe.core.config.vibe_schema", "DEFAULT_PROVIDERS"),
+    "PRIMARY_MISTRAL_PROVIDER": (
+        "vibe.core.config.vibe_schema",
+        "PRIMARY_MISTRAL_PROVIDER",
+    ),
     "DEFAULT_TRANSCRIBE_MODELS": (
         "vibe.core.config.vibe_schema",
         "DEFAULT_TRANSCRIBE_MODELS",

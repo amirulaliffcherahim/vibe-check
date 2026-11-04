@@ -42,6 +42,12 @@ class ModelConfigView(ProtocolModel):
     # defines it; None from an older server (ADR 0014) or when no known layer
     # defines it.
     source: ModelSource | None = None
+    # The name of the provider the model runs on, as `/model` shows it in
+    # parentheses. None when the provider is not configured.
+    provider_label: str | None = None
+    # Whether the alias is in `scoped_models`; `/model` shows scoped models
+    # first and, by default, only them.
+    scoped: bool = False
 
 
 class TranscribeModelConfigView(ProtocolModel):
@@ -90,6 +96,10 @@ class ConfigView(ProtocolModel):
     # Cold-cache first launch
     awaiting_experiment_model: bool = False
     default_model_alias: str
+    # True when `scoped_models` names at least one available model; `/model`
+    # then shows only scoped models until Tab switches to all. Defaulted so an
+    # older client tolerates its absence (ADR 0014).
+    model_scope_active: bool = False
     default_agent: str = "accept-edits"
     theme: str
     log_level: str | None

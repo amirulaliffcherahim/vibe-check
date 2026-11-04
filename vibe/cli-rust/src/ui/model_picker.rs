@@ -9,7 +9,7 @@ use ratatui::Frame;
 
 use super::{hint_line, list_cursor, scrollbar, theme};
 use crate::app::App;
-use crate::model_picker::{is_current, option_count};
+use crate::model_picker::{is_current, option_count, visible_models};
 
 /// Draw the whole screen with the picker replacing the input box; the chat
 /// shrinks to make room for the bottom-app.
@@ -49,10 +49,15 @@ fn draw_box(app: &mut App, f: &mut Frame, area: Rect) {
     let w = area.width;
     let h = area.height;
 
+    let title = match (app.model_picker.scope_active, app.model_picker.show_all) {
+        (false, _) => "Select Model",
+        (true, false) => "Select Model (scoped · Tab for all)",
+        (true, true) => "Select Model (all · Tab for scoped)",
+    };
     f.buffer_mut().set_string(
         bx + 2,
         by + 1,
-        "Select Model",
+        title,
         Style::default()
             .fg(theme::primary())
             .bg(theme::background())
@@ -98,7 +103,7 @@ fn draw_box(app: &mut App, f: &mut Frame, area: Rect) {
         );
     }
 
-    hint_line::draw(f, bx + 2, by + h - 2, hint_line::PICK_HINTS);
+    hint_line::draw(f, bx + 2, by + h - 2, hint_line::MODEL_PICK_HINTS);
 }
 
 /// One option row: the `›`/blank marker, the label, and (row 0) the dim hint.
@@ -120,11 +125,25 @@ fn draw_option(app: &App, f: &mut Frame, row: Rect, i: usize) {
         false => base,
     };
     let label = if i == 0 {
-        "Default"
+        "Default".to_owned()
     } else {
-        &app.model_picker.models[i - 1].display_name
+        visible_models(app)
+            .get(i - 1)
+            .map(|model| crate::model_picker::row_label(model))
+            .unwrap_or_default()
     };
-    f.buffer_mut().set_string(x + 2, y, label, name_style);
+    f.buffer_mut().set_string(x + 2, y, &label, name_style);
+    // Starred while browsing all models, so the user sees what is scoped.
+    let starred = i > 0
+        && app.model_picker.show_all
+        && app.model_picker.scope_active
+        && visible_models(app)
+            .get(i - 1)
+            .is_some_and(|model| model.scoped);
+    if starred {
+        let star_x = x + 2 + label.chars().count() as u16;
+        f.buffer_mut().set_string(star_x, y, " ★", dim);
+    }
 
     if i == 0 {
         let hint = format!("  (currently {})", app.model_picker.default_display_name);

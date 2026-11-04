@@ -1970,6 +1970,80 @@ class TestGetMistralProvider:
         provider = cfg.get_mistral_provider()
         assert provider is mistral_provider
 
+    def test_primary_named_provider_wins_over_an_active_custom_mistral_provider(
+        self, make_config: Callable[..., VibeConfigSchema]
+    ) -> None:
+        primary = ProviderConfig(
+            name="mistral",
+            api_base="https://api.mistral.ai/v1",
+            api_key_env_var="MISTRAL_API_KEY",
+            backend=Backend.MISTRAL,
+        )
+        work = ProviderConfig(
+            name="mistral-work",
+            api_base="https://proxy.example.com/v1",
+            api_key_env_var="MISTRAL_WORK_API_KEY",
+            backend=Backend.MISTRAL,
+        )
+        cfg = make_config(
+            providers=[work, primary],
+            models=[
+                ModelConfig(
+                    name="mistral-large", provider="mistral-work", alias="work-large"
+                )
+            ],
+            active_model="work-large",
+        )
+        provider = cfg.get_mistral_provider()
+        assert provider is not None
+        assert provider.name == "mistral"
+
+    def test_primary_named_provider_must_use_the_mistral_backend(
+        self, make_config: Callable[..., VibeConfigSchema]
+    ) -> None:
+        not_mistral = ProviderConfig(
+            name="mistral",
+            api_base="http://127.0.0.1:8080/v1",
+            api_key_env_var="",
+            backend=Backend.GENERIC,
+        )
+        other = ProviderConfig(
+            name="other",
+            api_base="https://api.mistral.ai/v1",
+            api_key_env_var="OTHER_API_KEY",
+            backend=Backend.MISTRAL,
+        )
+        cfg = make_config(
+            providers=[not_mistral, other],
+            models=[ModelConfig(name="local", provider="mistral", alias="local")],
+            active_model="local",
+        )
+        provider = cfg.get_mistral_provider()
+        assert provider is other
+
+    def test_without_a_primary_the_active_mistral_provider_is_used(
+        self, make_config: Callable[..., VibeConfigSchema]
+    ) -> None:
+        work = ProviderConfig(
+            name="work",
+            api_base="https://api.mistral.ai/v1",
+            api_key_env_var="WORK_API_KEY",
+            backend=Backend.MISTRAL,
+        )
+        home = ProviderConfig(
+            name="home",
+            api_base="https://api.mistral.ai/v1",
+            api_key_env_var="HOME_API_KEY",
+            backend=Backend.MISTRAL,
+        )
+        cfg = make_config(
+            providers=[work, home],
+            models=[ModelConfig(name="m", provider="home", alias="home-m")],
+            active_model="home-m",
+        )
+        provider = cfg.get_mistral_provider()
+        assert provider is home
+
 
 class TestIsActiveModelMistral:
     def test_returns_true_when_active_provider_is_mistral(

@@ -36,6 +36,8 @@ pub mod action {
     pub const FULL_CHANGELOG: &str = "full changelog";
     pub const SAVE: &str = "save";
     pub const SESSION_ONLY: &str = "session only";
+    pub const ALL_OR_SCOPED: &str = "all/scoped";
+    pub const SCOPE: &str = "scope";
     pub const CANCEL: &str = "cancel";
     pub const CLOSE: &str = "close";
     pub const BACK: &str = "back";

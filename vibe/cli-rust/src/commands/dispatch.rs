@@ -44,6 +44,7 @@ pub(super) fn run_command(
         "/rewind" => rewind::command(app, client),
         "/branch" | "/fork" => super::branch::branch_session(app, client),
         "/mcp" | "/connectors" => mcp::show(app, client, value),
+        "/provider" | "/providers" => super::provider::run(app, client, value),
         "/plugins" => crate::plugins::show(app, client),
         "/reload-plugins" => crate::plugins::reload(app, client),
         "/leanstall" => super::leanstall::install_lean(app, client),

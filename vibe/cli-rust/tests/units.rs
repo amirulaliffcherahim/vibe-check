@@ -202,6 +202,10 @@ mod mode_indicator;
 mod model_enforcement;
 #[path = "units/model_picker.rs"]
 mod model_picker;
+#[path = "units/model_scope.rs"]
+mod model_scope;
+#[path = "units/provider_args.rs"]
+mod provider_args;
 #[path = "units/mouse_pixels.rs"]
 mod mouse_pixels;
 #[path = "units/mouse_routing.rs"]

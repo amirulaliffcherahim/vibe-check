@@ -6,6 +6,7 @@ from e2e.app_server.scenario import Timeline
 
 request_methods = {"telemetry/record"}
 capture_startup = False
-screen_contains = ("/help: Show help message", "/copy: Copy the last agent message")
+# Two entries that stay inside the viewport however long the command list grows.
+screen_contains = ("/help: Show help message", "/debug: Toggle debug console")
 
 timeline: Timeline = ["/hel", "\r"]  # typos:disable-line

@@ -301,6 +301,11 @@ emits_finish_reason = false  # set false for OpenAI-compatible endpoints that en
 # nothing warns — the drift signal; do not merge them to silence it.
 allowed_models = ["mistral-vibe-cli-*"]
 
+# Model aliases /model shows by default, to keep the list short. Display only:
+# every model stays selectable after Tab in /model. Empty shows all models.
+# Edit it with * in /model.
+scoped_models = ["mistral-medium-3.5", "shy/large"]
+
 [[models]]
 name = "mistral-vibe-cli-latest"
 provider = "mistral"
@@ -1003,6 +1008,12 @@ session's model.
 - `/help` - Show help message
 - `/config` - Full-screen settings browser. Fields show their value and origin layer (default / TOML / env / override). Type to filter, arrows to move, Enter to edit; booleans toggle, closed-set fields (theme, models) pick from a list, scalars edit inline, complex fields open a JSON editor. The edit modal shows an inspector of the layers setting the field; edits persist to the user config (`~/.vibe/config.toml`) by default, `Tab` cycles the save target through the project config (`.vibe/config.toml`, when the project layer is active) and the ephemeral session override (until restart), and `Ctrl+R` clears the field one writable layer at a time toward the default. The `tools` field opens a grouped tool list with a per-tool config editor (permission, allow/deny lists, `Ctrl+E` for raw JSON). Enabling/disabling whole MCP servers or connectors stays in `/mcp`.
 - `/model` - Select active model. The footer shows the active model and its thinking level (`Name[level]`) before the token counter; clicking it opens `/model` and keeps the prompt being typed (only while idle, like the typed command). On narrow terminals the model is shortened first, then the working directory, and the model is hidden before the working directory gets very short.
+  Each row ends with the name of the provider it runs on, in parentheses:
+  `(mistral)` for your Mistral account, or the provider's own name such as
+  `(shy)` or `(openrouter)`. Press `*` to add or remove the highlighted model
+  from your scoped list (`scoped_models` in config.toml); while the list is
+  non-empty `/model` shows only scoped models and the active one. Press `Tab` to
+  switch between scoped and all models.
 - `/thinking` - Select thinking level
 - `/theme` - Select UI theme; `auto` follows terminal/OS appearance (persisted in config)
 - `/reload` - Reload configuration, agent instructions, and skills from disk (skills added or edited on disk are also picked up on their own while `file_watcher_for_autocomplete` is on, except in sandboxed sessions)
@@ -1071,6 +1082,25 @@ session's model.
 - `/proxy-setup` - Configure proxy and SSL certificate settings
 - `/leanstall` - Install the Lean 4 agent (leanstral)
 - `/unleanstall` - Uninstall the Lean 4 agent
+- `/provider` (alias `/providers`) - Add and manage custom Mistral-compatible
+  providers beside your Mistral account. Vibe's own `mistral` provider keeps
+  your Subscription plan sign-in or `MISTRAL_API_KEY`; each custom provider gets
+  its own `api_base`, its own key (stored in the OS keyring, or
+  `~/.vibe/.env`), and its own models. Subcommands: `list` (default) shows every
+  provider, its type, API base, credential source, and models; `add <name>
+  <api_base> [api_key] [--type T]` registers a provider and lists its models,
+  where `T` is `openai` (OpenAI-compatible, the default), `mistral`
+  (Mistral-compatible: a second Mistral workspace key, a proxy, or a
+  self-hosted server; it never becomes your Mistral account),
+  `openai-responses`, `reasoning`, or `anthropic`; `--no-fetch` skips listing
+  models; `set-key <name> <key>`;
+  `fetch-models <name>` registers every model the provider's models endpoint
+  lists; `add-model <provider> <model> [--alias A] [--context N]
+  [--input-price N] [--output-price N]` registers one model by hand, with the
+  prices `/status` uses to report cost; `remove <name>` drops the provider, its
+  models, and its key. Models are registered as `<provider>/<model>` and appear
+  in `/model`. The primary `mistral` provider cannot be added, renamed, or
+  removed here, and a custom provider may not reuse `MISTRAL_API_KEY`.
 - `/plugins` - Display the plugins this session is running (Unified Harness only). Shows each plugin's name, scope, source format, content digest, and
   components (skills, MCP servers, agents, hooks, knowledge, connectors, tools).
   Press `r` inside the view to reload.
